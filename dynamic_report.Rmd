@@ -1,0 +1,84 @@
+---
+title: "My dynamic report"
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, error=FALSE)
+library("tidyverse")
+
+logged_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vSq8F0qiYCZq4PkAi_R4hqZzWfP71FXaOV9Nhe_H-A5z6WCii-Q9AgSGIW83A6pB2aHbpjy6G_3fi-f/pub?output=csv")
+latest_data <- rename(logged_data, timestamp = 1, first_letter = 2, yellow_tiles_count = 3, solved = 4, guess_count = 5, rated_difficulty = 6, last_guess_green_tiles_count = 7)
+
+```
+
+```{css}
+body {
+  background-color: #36454F;
+  color: white;
+  font-size: 18px;
+  font-family: cursive;
+}
+
+pre {
+  background-color: #3a3a3a;
+  color: white;
+  font-size: 18px;
+  text-shadow: 0 0 0;
+}
+
+h2 {
+  color: yellow;
+  text-align: center;
+  text-shadow: 0 0 3px #fff;
+}
+
+h4 {
+  color: white;
+  text-align: right;
+  text-shadow: 0 0 3px #fff;
+}
+
+```
+
+## Daily Wordle game performance dynamic report.
+
+This dynamic report tracks my performance of the daily Wordle game, including the first letter used for each game, the amount of guesses and whether I had solved that day's game. This report serves to analyse my overall knowledge of the English vocabulary 
+
+```{r}
+difficulty_mean <- mean(latest_data$rated_difficulty)
+guess_count_mean <- mean(latest_data$guess_count, na.rm = TRUE)
+most_yellow_tiles <- max(latest_data$yellow_tiles_count)
+least_yellow_tiles <- min(latest_data$yellow_tiles_count)
+num_played <- count(latest_data)$n
+num_solved <- sum(latest_data$solved == "Yes")
+num_failed <- sum(latest_data$solved == "No")
+```
+
+Number of games played: `r num_played`
+
+Number of games solved: `r num_solved`
+
+Number of games failed: `r num_failed`
+
+The mean of my difficulty rating of the Wordle daily  is `r difficulty_mean`
+
+The mean number of guesses per winning game is `r guess_count_mean`
+
+The most amount of yellow tiles I got in a game is `r most_yellow_tiles`
+
+The least amount of yellow tiles I got in a game is `r least_yellow_tiles`
+
+```{r}
+ggplot(latest_data) +
+  geom_bar(aes(y = first_letter, fill = solved)) +
+  labs(title = "Win rate with each starting letter", y = "First Letter", x = "Games played") + scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
+
+```
+
+
+```{r}
+ggplot(latest_data) + geom_bar(aes(y = rated_difficulty)) +
+  labs(title = "Difficulty rated per game", y = "Difficulty", x = " Games rated") +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 8)) + scale_y_continuous(breaks = scales::pretty_breaks(n = 6))
+```
